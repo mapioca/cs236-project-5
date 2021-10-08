@@ -72,6 +72,8 @@ private:
     void printRuleHeadAndBody(Rule &rule);
 
     void printSCCNodes(const set<int> &set);
+
+    void printAllSCCs(queue<set<int>> queue);
 };
 
 

@@ -285,25 +285,27 @@ void Interpreter::optimizedRun() {
 
     //Set Forward Graph
     Graph forwardGraph = buildDependencyGraph(forwardEdgeList);
-    std::cout << std:: endl << "Dependency Graph" << std::endl;
+    std::cout << "Dependency Graph" << std::endl;
     forwardGraph.toString();
 
     //Set Reversed Graph
     Graph reverseGraph = buildDependencyGraph(reverseEdgeList);
-    //std::cout << std:: endl << "Reverse Dependency Graph" << std::endl;
-    //reverseGraph.toString();
-    //std::cout << std:: endl;
+    std::cout << std:: endl << "Reverse Dependency Graph" << std::endl;
+    reverseGraph.toString();
+    std::cout << std:: endl;
 
     //Get postorder from Reversed Graph
     std::stack<int> postorder = reverseGraph.getPostorder();
-    //printReversedGraphPO(postorder);
+    printReversedGraphPO(postorder);
 
     //Get Strongly Connected Components from Forward Graph
     std::queue<std::set<int>> SCCs = forwardGraph.getSCC(postorder);
+    std::queue<std::set<int>> sccsCopy = SCCs;
+    printAllSCCs(sccsCopy);
 
     //Evaluate each SCC
     std::cout << std::endl << "Rule Evaluation" << std::endl;
-    optimizedRuleEvaluation(SCCs, forwardGraph);
+    optimizedRuleEvaluation(SCCs, reverseGraph);
 
     //Evaluate each Query
     std::cout << std::endl << "Query Evaluation" << endl;
@@ -415,15 +417,21 @@ void Interpreter::optimizedRuleEvaluation(queue<set<int>> sccForest, Graph graph
             newDatabaseSize = database.databaseSize();
             iterations++;
 
+            int node = *sccToEvaluate.begin();
+
             if(sccToEvaluate.size() == 1) {
-                databaseSizeDiff = 0;
+                if(!graph.getGraph().find(node)->second.empty()) {
+                    databaseSizeDiff = newDatabaseSize - databaseSize;
+                } else {
+                    databaseSizeDiff = 0;
+                }
             } else {
                 databaseSizeDiff = newDatabaseSize - databaseSize;
             }
         } while((databaseSizeDiff != 0));
 
         //Print Passes
-        cout << iterations << " passes:";
+        cout << iterations << " passes: ";
         printSCCNodes(sccToEvaluate);
 
         //Move on to next SCC
@@ -432,7 +440,7 @@ void Interpreter::optimizedRuleEvaluation(queue<set<int>> sccForest, Graph graph
 }
 
 void Interpreter::printSCC(const set<int> &SCCSet) {
-    cout << "SCC:";
+    cout << "SCC: ";
     printSCCNodes(SCCSet);
 }
 
@@ -440,7 +448,7 @@ void Interpreter::printRuleHeadAndBody(Rule &rule) {
     int count = 1;
 
     //Prints Rule Head
-    cout << rule.getRuleHeadPredicate().toString() << ":- ";
+    cout << rule.getRuleHeadPredicate().toString() << " :- ";
 
     //Prints Rule Body
     for(Predicate predicate : rule.getRuleBodyPredicates()) {
@@ -465,6 +473,13 @@ void Interpreter::printSCCNodes(const set<int> &scc) {
         } else if(count == (int)scc.size()) {
             cout << "R" << i << endl;
         }
+    }
+}
+
+void Interpreter::printAllSCCs(queue<set<int>> SCCForest) {
+    while(!SCCForest.empty()) {
+        printSCC(SCCForest.front());
+        SCCForest.pop();
     }
 }
 

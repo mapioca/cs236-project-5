@@ -290,18 +290,18 @@ void Interpreter::optimizedRun() {
 
     //Set Reversed Graph
     Graph reverseGraph = buildDependencyGraph(reverseEdgeList);
-    std::cout << std:: endl << "Reverse Dependency Graph" << std::endl;
-    reverseGraph.toString();
-    std::cout << std:: endl;
+    //std::cout << std:: endl << "Reverse Dependency Graph" << std::endl;
+    //reverseGraph.toString();
+    //std::cout << std:: endl;
 
     //Get postorder from Reversed Graph
     std::stack<int> postorder = reverseGraph.getPostorder();
-    printReversedGraphPO(postorder);
+    //printReversedGraphPO(postorder);
 
     //Get Strongly Connected Components from Forward Graph
     std::queue<std::set<int>> SCCs = forwardGraph.getSCC(postorder);
-    std::queue<std::set<int>> sccsCopy = SCCs;
-    printAllSCCs(sccsCopy);
+    //std::queue<std::set<int>> sccsCopy = SCCs;
+    //printAllSCCs(sccsCopy);
 
     //Evaluate each SCC
     std::cout << std::endl << "Rule Evaluation" << std::endl;

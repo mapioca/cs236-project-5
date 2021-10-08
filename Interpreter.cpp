@@ -445,7 +445,7 @@ void Interpreter::printRuleHeadAndBody(Rule &rule) {
     //Prints Rule Body
     for(Predicate predicate : rule.getRuleBodyPredicates()) {
         cout << predicate.toString();
-        if(count < rule.getRuleBodyPredicates().size()) {
+        if(count < (int)rule.getRuleBodyPredicates().size()) {
             cout << ",";
             count ++;
         } else {
@@ -459,10 +459,10 @@ void Interpreter::printSCCNodes(const set<int> &scc) {
     int count = 1;
 
     for(int i : scc) {
-        if(count < scc.size()) {
+        if(count < (int)scc.size()) {
             cout << " R" << i  << ",";
             count++;
-        } else if(count == scc.size()) {
+        } else if(count == (int)scc.size()) {
             cout << "R" << i << endl;
         }
     }

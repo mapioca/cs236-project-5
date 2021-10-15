@@ -299,13 +299,13 @@ void Interpreter::optimizedRun() {
     //printReversedGraphPO(postorder);
 
     //Get Strongly Connected Components from Forward Graph
-    std::queue<std::set<int>> SCCs = forwardGraph.getSCC(postorder);
-    //std::queue<std::set<int>> sccsCopy = SCCs;
-    //printAllSCCs(sccsCopy);
+    std::queue<std::set<int>> sccForest = forwardGraph.getSCC(postorder);
+    //std::queue<std::set<int>> sccsCopy = sccForest;
+    //cout << endl; printAllSCCs(sccsCopy);
 
     //Evaluate each SCC
     std::cout << std::endl << "Rule Evaluation" << std::endl;
-    optimizedRuleEvaluation(SCCs, reverseGraph);
+    optimizedRuleEvaluation(sccForest, forwardGraph, reverseGraph);
 
     //Evaluate each Query
     std::cout << std::endl << "Query Evaluation" << endl;
@@ -395,44 +395,50 @@ void Interpreter::printReversedGraphPO(stack<int> stack) {
     std::cout << std:: endl;
 }
 
-void Interpreter::optimizedRuleEvaluation(queue<set<int>> sccForest, Graph graph) {
+void Interpreter::optimizedRuleEvaluation(queue<set<int>> sccForest, Graph graph, Graph reversedGraph) {
 
     while(!sccForest.empty()) {
         int iterations = 0;
         int databaseSize = 0;
         int newDatabaseSize = 0;
         int databaseSizeDiff = 0;
-        set<int> sccToEvaluate = sccForest.front();
+        set<int> SCC = sccForest.front();
 
         //Print SCC being evaluated
-        printSCC(sccToEvaluate);
+        printSCC(SCC);
 
         //Doing Actual Evaluation
         do{
             databaseSize = database.databaseSize();
-            for(int i : sccToEvaluate) {
+
+            for(int i : SCC) {
                 printRuleHeadAndBody(rules.at(i));
                 evaluateRule(rules.at(i));
             }
             newDatabaseSize = database.databaseSize();
             iterations++;
 
-            int node = *sccToEvaluate.begin();
+            int node = *SCC.begin();
 
-            if(sccToEvaluate.size() == 1) {
-                if(!graph.getGraph().find(node)->second.empty()) {
-                    databaseSizeDiff = newDatabaseSize - databaseSize;
-                } else {
-                    databaseSizeDiff = 0;
-                }
+
+            if(graph.getGraph().find(node)->second.empty()) {
+                goto exit;
             } else {
-                databaseSizeDiff = newDatabaseSize - databaseSize;
+                if(*graph.getGraph().find(node)->second.find(node)) {
+                    goto exit;
+                }
             }
+
+            databaseSizeDiff = newDatabaseSize - databaseSize;
+
         } while((databaseSizeDiff != 0));
+
+
+        exit:
 
         //Print Passes
         cout << iterations << " passes: ";
-        printSCCNodes(sccToEvaluate);
+        printSCCNodes(SCC);
 
         //Move on to next SCC
         sccForest.pop();
@@ -468,7 +474,7 @@ void Interpreter::printSCCNodes(const set<int> &scc) {
 
     for(int i : scc) {
         if(count < (int)scc.size()) {
-            cout << " R" << i  << ",";
+            cout << "R" << i  << ",";
             count++;
         } else if(count == (int)scc.size()) {
             cout << "R" << i << endl;
@@ -482,4 +488,6 @@ void Interpreter::printAllSCCs(queue<set<int>> SCCForest) {
         SCCForest.pop();
     }
 }
+
+
 
